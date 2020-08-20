@@ -1,15 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Provider} from 'react-redux';
-import {createStore} from 'redux';
+import {createStore, applyMiddleware, combineReducers} from 'redux';
+import thunkMiddleware from 'redux-thunk';
 import './index.css';
 import App from './containers/App/App';
 import * as serviceWorker from './serviceWorker';
-import {searchRobots} from './reducers';
+import {searchRobots, requestRobots} from './reducers';
 // eslint-disable-next-line no-unused-vars
 import tachyons from 'tachyons';
 
-const store = createStore(searchRobots);
+const rootReducer = combineReducers({searchRobots, requestRobots});
+
+const store = createStore(rootReducer, applyMiddleware(thunkMiddleware));
 
 ReactDOM.render(
   <React.StrictMode>

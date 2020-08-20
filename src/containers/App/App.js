@@ -3,53 +3,51 @@ import './App.css';
 import CardList from '../../components/CardList/CardList';
 import Scroll from '../../components/Scroll/Scroll';
 import SearchBox from '../../components/SearchBox/SearchBox';
-import ErrorBoundry from '../../components/ErrorBoundry/ErrorBoundry';
-import {setSearchField} from '../../actions';
+import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
+import {setSearchField, requestRobots} from '../../actions';
 import {connect} from 'react-redux';
+import Header from '../../components/Header/Header';
 
 const mapStateToProps = (state) => {
   return {
-    searchField: state.searchField
+    searchField: state.searchRobots.searchField,
+    robots: state.requestRobots.robots,
+    isPending: state.requestRobots.isPending,
+    error: state.requestRobots.error
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onSearchChange: (event) => dispatch(setSearchField(event.target.value))
+    onSearchChange: (event) => dispatch(setSearchField(event.target.value)),
+    onRequestRobots: () => dispatch(requestRobots())
   };
 };
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      robots: []
-    }
-  }
-  
   componentDidMount() {
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then(response => response.json())
-      .then(users => {this.setState({robots: users})});
+    this.props.onRequestRobots();
   }
   
   render() {
-    const {robots} = this.state;
-    const {searchField, onSearchChange} = this.props;
+    const {searchField, onSearchChange, robots, isPending} = this.props;
     const filteredRobots = robots.filter(robots => {
-      return robots.name.toLowerCase().includes(searchField.toLowerCase())
+      return(
+        robots.name.toLowerCase().includes(searchField.toLowerCase())
+        || robots.email.toLowerCase().includes(searchField.toLowerCase())
+      );
     });
-    if (!robots.length) {
+    if (isPending) {
       return <h1>Loading...</h1>
     } else {
       return (
         <div className='tc'>
-          <h1 className='f1'>Robo Friends</h1>
+          <Header/>
           <SearchBox searchChange={onSearchChange}/>
           <Scroll>
-            <ErrorBoundry>
+            <ErrorBoundary>
               <CardList robots={filteredRobots}/>
-            </ErrorBoundry>
+            </ErrorBoundary>
           </Scroll>
         </div>
       );
